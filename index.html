@@ -2798,11 +2798,19 @@ imagensComAlt:Array.from(document.querySelectorAll("img")).every(function(im){re
     var poster = e.target && e.target.closest ? e.target.closest('[data-video-poster]') : null;
     if(poster && !poster.querySelector('video')){ e.preventDefault(); poster.click(); }
   });
-  setInterval(function(){
-    document.querySelectorAll('video[autoplay]').forEach(function(v){
-      if(v.paused){ var pr = v.play(); if(pr && pr.catch){} }
-    });
-  }, 900);
+  /* v11.1 FIX PAUSE: sem loop que religava o vídeo. Pausou, fica pausado. */
+  document.addEventListener('pause', function(e){ if(e.target && e.target.tagName === 'VIDEO'){ e.target.dataset.keliUserPaused = '1'; } }, true);
+  document.addEventListener('play', function(e){ if(e.target && e.target.tagName === 'VIDEO'){ try{ delete e.target.dataset.keliUserPaused; }catch(err){} } }, true);
+  /* Tenta dar play só 1 vez logo após o vídeo nascer, nunca em loop. Se o usuário pausar depois, respeita. */
+  function keliTentaPlayUmaVez(v){
+    if(!v || v.dataset.keliUserPaused === '1') return;
+    if(!v.paused) return;
+    var pr = v.play(); if(pr && pr.catch){ pr.catch(function(){}); }
+  }
+  document.addEventListener('click', function(e){
+    var v = e.target && e.target.closest ? e.target.closest('video') : null;
+    if(v) setTimeout(function(){ keliTentaPlayUmaVez(v); }, 350);
+  }, true);
   /* TESTE DE AUTOMAÇÃO v11: só console + window.__keliTeste, sem selo visível */
   function runTeste(){
     try{
