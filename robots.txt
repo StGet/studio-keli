@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://stget.github.io/studio-keli/sitemap.xml
